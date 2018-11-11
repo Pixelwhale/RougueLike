@@ -4,17 +4,17 @@ using UnityEngine;
 
 public abstract class Item
 {
-    protected int ID;
+    private int id;
     protected int quantity;
 
-    public Item(int ID, int quantity)
+    public Item(int id, int quantity)
     {
-        this.ID = ID;
+        this.id = id;
         this.quantity = quantity;
     }
 
-    public int GetID() { return ID; }
-    public int GetQuantity() { return quantity; }
+    public int ID() { return id; }
+    public int Quantity() { return quantity; }
 
     public void AddQuantity(int q)
     {

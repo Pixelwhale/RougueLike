@@ -15,23 +15,24 @@ public class ItemBackpack
 
     public void AddItem(Item item)
     {
+        //同じアイテム持ってるかをチェックする
         foreach (Item i in items)
         {
-            if (i.GetID() == item.GetID())
+            if (i.ID() == item.ID())
             {
-                i.AddQuantity(item.GetQuantity());
+                i.AddQuantity(item.Quantity());
                 return;
             }
         }
-        AddNewItem(item);
-    }
-    private void AddNewItem(Item item)
-    {
+
+        //アイテムリストが空いてるかをチェックする
         if (items.Count == items.Capacity)
         {
-            Debug.Log("Item list is full");
+            Debug.Log("Item backpack is full");
             return;
         }
+
+        //アイテムの追加
         items.Add(item);
     }
 
