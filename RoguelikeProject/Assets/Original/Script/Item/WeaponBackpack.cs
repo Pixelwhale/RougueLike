@@ -5,14 +5,10 @@ using UnityEngine;
 public class WeaponBackpack
 {
     private List<Weapon> weapons = new List<Weapon>(4);
-    
-    //装備している武器のインデックス
-    private int equip = -1;
 
     public void Initialize()
     {
         weapons.Clear();
-        equip = -1;
     }
 
     public void AddWeapon(Weapon weapon)
@@ -38,9 +34,25 @@ public class WeaponBackpack
         weapons.Add(weapon);
     }
 
+    public void RemoveWeapon(int index)
+    {
+        Debug.Assert(index >= 0 && index < weapons.Count, "RemoveWeapon : index invalid");
+        weapons.RemoveAt(index);
+    }
+
     public void Equip(int index)
     {
         Debug.Assert(index >= 0 && index < weapons.Count, "Equip : index invalid");
-        equip = index;
+        foreach (Weapon w in weapons)
+        {
+            w.Equip(false);
+        }
+        weapons[index].Equip(true);
+    }
+
+    public bool IsEquiped(int index)
+    {
+        Debug.Assert(index >= 0 && index < weapons.Count, "IsEquiped : index invalid");
+        return weapons[index].IsEquiped();
     }
 }

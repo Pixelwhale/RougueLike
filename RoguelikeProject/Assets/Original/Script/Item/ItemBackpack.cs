@@ -36,9 +36,16 @@ public class ItemBackpack
         items.Add(item);
     }
 
+    public void RemoveItem(int index)
+    {
+        Debug.Assert(index >= 0 && index < items.Count, "RemoveItem : index invalid");
+        items.RemoveAt(index);
+    }
+
     public void UseItem(int index)
     {
         Debug.Assert(index >= 0 && index < items.Count, "UseItem : index invalid");
         items[index].Use(player);
+        if (items[index].Quantity() == 0) RemoveItem(index);
     }
 }

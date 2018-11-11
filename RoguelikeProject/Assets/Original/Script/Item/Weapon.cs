@@ -7,6 +7,7 @@ public class Weapon
     private int id;
     private int power;
     private int range;
+    private bool isEquiped = false;
 
     public Weapon(int id, int power, int range)
     {
@@ -18,4 +19,10 @@ public class Weapon
     public int ID() { return id; }
     public int Power() { return power; }
     public int Range() { return range; }
+    public bool IsEquiped() { return isEquiped; }
+
+    public void Equip(bool b)
+    {
+        isEquiped = b;
+    }
 }
