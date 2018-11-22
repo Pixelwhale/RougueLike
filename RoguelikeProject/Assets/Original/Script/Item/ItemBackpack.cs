@@ -28,7 +28,7 @@ public class ItemBackpack : MonoBehaviour
 
     public void Initialize()
     {
-        items = new List<Item>(20);
+        items = new List<Item>(8);
     }
 
     public void AddItem(Item item)
@@ -57,14 +57,14 @@ public class ItemBackpack : MonoBehaviour
 
     public void RemoveItem(int index)
     {
-        Debug.Assert(index >= 0 && index < items.Count, "RemoveItem : index invalid");
+        if (!IsExist(index)) return;
         items.RemoveAt(index);
         UpdateSprite();
     }
 
     public void UseItem(int index)
     {
-        Debug.Assert(index >= 0 && index < items.Count, "UseItem : index invalid");
+        if (!IsExist(index)) return;
         items[index].Use(player);
         if (items[index].Quantity() == 0) RemoveItem(index);
     }

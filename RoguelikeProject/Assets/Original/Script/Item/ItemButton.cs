@@ -3,34 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WeaponButton : MonoBehaviour
+public class ItemButton : MonoBehaviour
 {
     public int index;
 
-    private bool WeaponExist()
+    private bool ItemExist()
     {
-        return (GetComponentInParent<WeaponBackpack>().IsExist(index));
+        return (GetComponentInParent<ItemBackpack>().IsExist(index));
     }
 
     public void Click()
     {
-        if (!WeaponExist())
+        if (!ItemExist())
         {
-            Debug.Log("Weapon not exist");
+            Debug.Log("Item not exist");
             return;
         }
-        Debug.Log("click");
-        GetComponentInParent<WeaponBackpack>().Equip(index);
+		Debug.Log("click");
+		GetComponentInParent<ItemBackpack>().UseItem(index);
     }
 
     public void BeginDrag()
     {
-        if (!WeaponExist())
+        if (!ItemExist())
         {
-            Debug.Log("Weapon not exist");
+            Debug.Log("Item not exist");
             return;
         }
-        Debug.Log("begin");
+		Debug.Log("begin");
         Color color = GetComponent<Image>().color;
         color.a = 0.6f;
         GetComponent<Image>().color = color;
@@ -38,12 +38,12 @@ public class WeaponButton : MonoBehaviour
 
     public void EndDrag()
     {
-        if (!WeaponExist())
+        if (!ItemExist())
         {
-            Debug.Log("Weapon not exist");
+            Debug.Log("Item not exist");
             return;
         }
-        Debug.Log("end");
+		Debug.Log("end");
         Color color = GetComponent<Image>().color;
         color.a = 1.0f;
         GetComponent<Image>().color = color;
@@ -51,12 +51,12 @@ public class WeaponButton : MonoBehaviour
 
     public void Drop()
     {
-        if (!WeaponExist())
+        if (!ItemExist())
         {
-            Debug.Log("Weapon not exist");
+            Debug.Log("Item not exist");
             return;
         }
-        Debug.Log("drop");
-        GetComponentInParent<WeaponBackpack>().RemoveWeapon(index);
+		Debug.Log("drop");
+		GetComponentInParent<ItemBackpack>().RemoveItem(index);
     }
 }
