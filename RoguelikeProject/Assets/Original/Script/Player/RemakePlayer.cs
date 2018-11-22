@@ -234,11 +234,17 @@ public class RemakePlayer : MovingObject
         //相手がenemyだったら
         Status receiver = enemy.GetComponent<Status>();
 
+        int damage = 0;
+
         //自身とEnemyをバトルさせる
-        battleSystem.Battle(receiver);
+        damage = battleSystem.Battle(receiver);
 
         //攻撃した際のアニメーションを再生
         animator.SetTrigger("playerChop");
+
+        //enemyのlifeTextを取得
+        LifeText lifeText = enemy.GetComponentInChildren<LifeText>();
+        lifeText.CallDamageText(damage);
     }
 
     private string AddTestHP()
