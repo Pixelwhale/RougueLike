@@ -20,7 +20,7 @@ namespace Completed
 		private GameObject levelImage;							//Image to block out level as levels are being set up, background for levelText.
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
 		private int level = 1;									//Current level number, expressed in game as "Day 1".
-		private List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
+		private List<RemakeEnemy> enemies;							//List of all Enemy units, used to issue them move commands.
 		private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
 		
@@ -45,7 +45,7 @@ namespace Completed
 			DontDestroyOnLoad(gameObject);
 			
 			//Assign enemies to a new List of Enemy objects.
-			enemies = new List<Enemy>();
+			enemies = new List<RemakeEnemy>();
 			
 			//Get a component reference to the attached BoardManager script
 			boardScript = GetComponent<BoardManager>();
@@ -125,7 +125,7 @@ namespace Completed
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.
-		public void AddEnemyToList(Enemy script)
+		public void AddEnemyToList(RemakeEnemy script)
 		{
 			//Add Enemy to List enemies.
 			enemies.Add(script);
