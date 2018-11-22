@@ -1,16 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class ItemBackpack
+public class ItemBackpack : MonoBehaviour
 {
     public Completed.Player player;
+    private List<Item> items;
+    public Sprite space;
 
-    private List<Item> items = new List<Item>(20);
+    void Awake()
+    {
+        Initialize();
+    }
+
+    private void UpdateSprite()
+    {
+        Image[] list = GetComponentsInChildren<Image>();
+        for (int i = 0; i < items.Capacity; ++i)
+        {
+            if (IsExist(i))
+                list[i + 2].sprite = items[i].sprite;
+            else
+                list[i + 2].sprite = space;
+        }
+    }
 
     public void Initialize()
     {
-        items.Clear();
+        items = new List<Item>(20);
     }
 
     public void AddItem(Item item)
@@ -34,12 +52,14 @@ public class ItemBackpack
 
         //アイテムの追加
         items.Add(item);
+        UpdateSprite();
     }
 
     public void RemoveItem(int index)
     {
         Debug.Assert(index >= 0 && index < items.Count, "RemoveItem : index invalid");
         items.RemoveAt(index);
+        UpdateSprite();
     }
 
     public void UseItem(int index)
@@ -47,5 +67,11 @@ public class ItemBackpack
         Debug.Assert(index >= 0 && index < items.Count, "UseItem : index invalid");
         items[index].Use(player);
         if (items[index].Quantity() == 0) RemoveItem(index);
+    }
+
+    public bool IsExist(int index)
+    {
+        if (index < 0 || index >= items.Capacity) return false;
+        return (items.Count > index);
     }
 }
