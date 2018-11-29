@@ -1,21 +1,39 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WeaponBackpack : MonoBehaviour
 {
-    private List<Weapon> weapons = new List<Weapon>(4);
+    public List<Weapon> weapons;
+    public Sprite space;
 
-    void Start()
+    void Awake()
     {
         Initialize();
     }
 
+    private void UpdateSprite()
+    {
+        Image[] list = GetComponentsInChildren<Image>();
+        for (int i = 0; i < weapons.Capacity; ++i)
+        {
+            if (IsExist(i))
+                list[i+2].sprite = weapons[i].sprite;
+            else
+                list[i+2].sprite = space;
+        }
+    }
+
     public void Initialize()
     {
-        weapons.Clear();
-        for (int i = 0; i < weapons.Capacity; ++i)
-            weapons.Add(null);
+        weapons = new List<Weapon>(4);
+
+        //test
+        Sprite sprite = Resources.Load<Sprite>("pikachu");
+        AddWeapon(new Weapon(0, sprite, 3, 1));
+
+        UpdateSprite();
     }
 
     public void AddWeapon(Weapon weapon)
@@ -39,28 +57,30 @@ public class WeaponBackpack : MonoBehaviour
 
         //武器の追加
         weapons.Add(weapon);
+        UpdateSprite();
     }
 
     public void RemoveWeapon(int index)
     {
-        Debug.Assert(index >= 0 && index < weapons.Capacity, "RemoveWeapon : index invalid");
+        if (!IsExist(index)) return;
 
         //空いてる枠をクリックするとき
-        if (weapons[index] == null) return;
+        if (index >= weapons.Count) return;
 
         //装備していない装備をクリックするとき
         if (IsEquiped(index))
             weapons[index].Equip(false);
 
         weapons.RemoveAt(index);
+        UpdateSprite();
     }
 
     public void Equip(int index)
     {
-        Debug.Assert(index >= 0 && index < weapons.Capacity, "Equip : index invalid");
+        if (!IsExist(index)) return;
 
         //空いてる枠をクリックするとき
-        if (weapons[index] == null) return;
+        if (index >= weapons.Count) return;
 
         //装備している装備をクリックするとき
         if (IsEquiped(index))
@@ -79,6 +99,16 @@ public class WeaponBackpack : MonoBehaviour
 
     public bool IsEquiped(int index)
     {
+        if (!IsExist(index))
+        {
+            Debug.Log("index error");
+        }
         return weapons[index].IsEquiped();
+    }
+
+    public bool IsExist(int index)
+    {
+        if (index < 0 || index >= weapons.Capacity) return false;
+        return (weapons.Count > index);
     }
 }

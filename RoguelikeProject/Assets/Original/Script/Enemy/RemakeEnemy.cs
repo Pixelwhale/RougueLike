@@ -22,6 +22,8 @@ public class RemakeEnemy : MovingObject
 
     private BattleSystem battleSystem;
 
+    private LifeText playerLifeText;
+
     //overrideしたStart
     protected override void Start()
     {
@@ -33,6 +35,9 @@ public class RemakeEnemy : MovingObject
 
         //targetをPlayerのtransformに設定
         target = GameObject.FindGameObjectWithTag("Player").transform;
+        playerLifeText = target.GetComponentInChildren<LifeText>();
+
+        skipMove = false;
 
         base.Start();
     }
@@ -112,13 +117,18 @@ public class RemakeEnemy : MovingObject
         //Playerのステータスを取得
         Status receiver = player.GetComponent<Status>();
 
+        int damage = 0;
+
         //バトルさせる
-        battleSystem.Battle(receiver);
+        damage = battleSystem.Battle(receiver);
 
         //攻撃のアニメーションを再生
         animator.SetTrigger("enemyAttack");
 
         //攻撃した音を再生
         SoundManager.instance.RandomizeSfx(attackSound1, attackSound2);
+
+        //プレイヤーのライフテキストに書き込みを行う
+        playerLifeText.CallDamageText(damage);
     }
 }

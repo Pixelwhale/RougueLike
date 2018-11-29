@@ -5,15 +5,18 @@ using UnityEngine;
 public abstract class Item
 {
     private int id;
+    private Sprite s;
     protected int quantity;
 
-    public Item(int id, int quantity)
+    public Item(int id, Sprite sprite, int quantity)
     {
         this.id = id;
+        this.s = sprite;
         this.quantity = quantity;
     }
 
     public int ID() { return id; }
+    public Sprite sprite { get { return s; } private set { s = value; } }
     public int Quantity() { return quantity; }
 
     public void AddQuantity(int q)
