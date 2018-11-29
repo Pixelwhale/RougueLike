@@ -19,19 +19,21 @@ public class BattleSystem : MonoBehaviour
 	}
 
     //アタッカーは自身のものを設定
-    public void Battle(Status receiver)
+    public int Battle(Status receiver)
     {
-        Battle(receiver, status);
+        return Battle(receiver, status);
     }
 
     //2つのステータスからバトルさせる
-    public void Battle(Status receiver,Status attacker)
+    public int Battle(Status receiver,Status attacker)
     {
         //アタッカーの攻撃力からダメージを算出(ダメージが0未満になるのは防ぐ)
         int damage = Mathf.Max(attacker.Attack - receiver.Defense, 0);
 
         //リシーバーにダメージを与える
         receiver.CurrentHp -= damage;
+
+        return damage;
     }
 
     public bool IsDead()
