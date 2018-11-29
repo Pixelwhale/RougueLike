@@ -27,14 +27,43 @@ public enum ItemType
     FOOD2,
 
     SIZE,
+    NONE,
 }
 
+//インスペクターに登録するアイテムの情報
 [System.Serializable]
 public struct ItemInfo
 {
     public ItemType type;
     public Sprite sprite;
     public float value;
+}
+
+//アイテムのタイプと個数を持つ構造体
+public struct ItemUse
+{
+    public ItemType type;
+    public int num;
+
+    public ItemUse(ItemType type,int num)
+    {
+        this.type = type;
+        this.num = num;
+    }
+}
+
+public struct ItemEqipment
+{
+    public ItemType type;
+
+    //装備中かどうか
+    public bool isEqipment;
+
+    public ItemEqipment(ItemType type,bool isEqipment)
+    {
+        this.type = type;
+        this.isEqipment = isEqipment;
+    }
 }
 
 public class ItemData : MonoBehaviour

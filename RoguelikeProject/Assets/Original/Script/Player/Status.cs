@@ -53,7 +53,7 @@ public class Status : MonoBehaviour
         set { armor = value; }
     }
 
-    void Start()
+    void Awake()
     {
         currentHP = maxHP;
         weapon = 0;

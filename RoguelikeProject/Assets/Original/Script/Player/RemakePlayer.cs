@@ -12,7 +12,6 @@ public class RemakePlayer : MovingObject
     public int pointsPerFood = 10;              //フードに当たった時の回復量
     public int pointsPerSoda = 20;              //ソーダに当たった時の回復量
     public int wallDamage = 1;                  //壁にもHPがあるので、壁に攻撃したとき(壁に向かって移動しようとすることで攻撃したことになる)壁に与えるダメージ量
-    public Text foodText;                       //満腹度を表示するためのTextUI
     public AudioClip moveSound1;                //プレイヤーが動いた時の音1
     public AudioClip moveSound2;                //プレイヤーが動いた時の音2
     public AudioClip eatSound1;                 //プレイヤーがフードを食べた時の音1
@@ -28,6 +27,11 @@ public class RemakePlayer : MovingObject
     private BattleSystem battleSystem;
 
     private Status status;
+
+    public int Food
+    {
+        get { return food; }
+    }
     
     //overrideしたStart
     protected override void Start()
@@ -38,9 +42,7 @@ public class RemakePlayer : MovingObject
 
         //満腹度を初期化
         food = GameManager.instance.playerFoodPoints;
-
-        //満腹度をTextUIに記載
-        foodText.text = "Food: " + food + AddTestHP();
+        status.CurrentHp = GameManager.instance.playerHP;
 
         //継承元のStartを呼ぶ
         base.Start();
@@ -49,15 +51,14 @@ public class RemakePlayer : MovingObject
     //GameObjectが非アクティブ、または削除されるときの呼ばれる
     private void OnDisable()
     {
+        //プレイヤーの満腹度、HPを保存
         GameManager.instance.playerFoodPoints = food;
+        GameManager.instance.playerHP = status.CurrentHp;
     }
 
     //更新
     private void Update()
     {
-        //満腹度をTextUIに反映
-        foodText.text = " Food: " + food + AddTestHP();
-
         //プレイヤーのターンでなかったらreturn
         if (!GameManager.instance.playersTurn) return;
 
@@ -84,9 +85,6 @@ public class RemakePlayer : MovingObject
     {
         //満腹度を減らす
         food--;
-
-        //満腹度をTextUIに反映させる
-        foodText.text = "Food: " + food + AddTestHP();
 
         //継承元のローグライク的な移動処理を行う
         base.AttemptMove<T>(xDir, yDir);
@@ -146,9 +144,6 @@ public class RemakePlayer : MovingObject
             //満腹度を回復させる
             food += pointsPerFood;
 
-            //満腹度をTextUIに記載
-            foodText.text = "+" + pointsPerFood + " Food: " + food + AddTestHP();
-
             //フードを食べた音を再生
             SoundManager.instance.RandomizeSfx(eatSound1, eatSound2);
 
@@ -161,9 +156,6 @@ public class RemakePlayer : MovingObject
         {
             //満腹度を回復させる
             food += pointsPerSoda;
-
-            //満腹度をTextUIに記載
-            foodText.text = "+" + pointsPerSoda + " Food: " + food + AddTestHP();
 
             //ソーダを飲んだ時の音を再生
             SoundManager.instance.RandomizeSfx(drinkSound1, drinkSound2);
@@ -188,9 +180,6 @@ public class RemakePlayer : MovingObject
 
         //満腹度を減らす
         food -= loss;
-
-        //満腹度をTextUIに反映
-        foodText.text = "-" + loss + " Food: " + food + AddTestHP();
 
         //GameOverをチェックする
         CheckIfGameOver();
@@ -245,10 +234,5 @@ public class RemakePlayer : MovingObject
         //enemyのlifeTextを取得
         LifeText lifeText = enemy.GetComponentInChildren<LifeText>();
         lifeText.CallDamageText(damage);
-    }
-
-    private string AddTestHP()
-    {
-        return "\nHP:" + status.CurrentHp;
     }
 }
