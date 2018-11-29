@@ -30,8 +30,9 @@ public class RemakeBoardManager : MonoBehaviour
     [Header("生成数")]
     public Count wallCount = new Count(5, 9);                       //Lower and upper limit for our random number of walls per level.
     public Count foodCount = new Count(1, 5);                       //Lower and upper limit for our random number of food items per level.
-    public Count itemCount = new Count(1, 2);
-    public Count weaponCount = new Count(1, 2);
+    public Count itemCount = new Count(0, 2);
+    public Count weaponCount = new Count(0, 2);
+    public Count armorCount = new Count(0, 2);
     [Header("脱出用オブジェクト")]
     public GameObject exit;                                         //Prefab to spawn for exit.
     [Header("実体生成用Prefab")]
@@ -42,6 +43,7 @@ public class RemakeBoardManager : MonoBehaviour
     public GameObject[] outerWallTiles;                             //Array of outer tile prefabs.
     public GameObject[] itemTiles;
     public GameObject[] weaponTiles;
+    public GameObject[] armorTiles;
 
     private Transform boardHolder;                                  //A variable to store a reference to the transform of our Board object.
     private List<Vector3> gridPositions = new List<Vector3>();  //A list of possible locations to place tiles.
@@ -154,6 +156,8 @@ public class RemakeBoardManager : MonoBehaviour
         LayoutObjectAtRandom(itemTiles, itemCount.minimum, itemCount.maximum);
 
         LayoutObjectAtRandom(weaponTiles, weaponCount.minimum, weaponCount.maximum);
+
+        LayoutObjectAtRandom(armorTiles, armorCount.minimum, armorCount.maximum);
 
         //Determine number of enemies based on current level number, based on a logarithmic progression
         int enemyCount = (int)Mathf.Log(level, 2f);
