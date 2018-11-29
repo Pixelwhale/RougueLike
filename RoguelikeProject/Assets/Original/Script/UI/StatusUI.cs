@@ -5,25 +5,45 @@ using UnityEngine.UI;
 
 public class StatusUI : MonoBehaviour
 {
-    private int hp = 10;
-    private int atk = 100;
-    private int food = 1000;
+    [SerializeField]
+    private Text hpText, atkText, foodText;
+
+    //テキストのデフォルトの文字列
+    private string hpdefault, atkdefault, fooddefault;
+
+    private Status playerStatus;
+    private RemakePlayer player;
+
+    private void Start()
+    {
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        playerStatus = playerObj.GetComponent<Status>();
+        player = playerObj.GetComponent<RemakePlayer>();
+
+        hpdefault = hpText.text;
+        atkdefault = atkText.text;
+        fooddefault = foodText.text;
+    }
+
+    private void Update()
+    {
+        SetHP(playerStatus.CurrentHp);
+        SetAtk(playerStatus.Attack);
+        SetFood(player.Food);
+    }
 
     public void SetHP(int hp)
     {
-        this.hp = hp;
-		transform.Find("hp").GetComponent<Text>().text =   "HP   : " + hp;
+        hpText.text = hpdefault + hp;
     }
 
     public void SetAtk(int atk)
     {
-        this.atk = atk;
-		transform.Find("atk").GetComponent<Text>().text =  "ATK  : " + atk;
+        atkText.text = atkdefault + atk;
     }
 
     public void SetFood(int food)
     {
-        this.food = food;
-		transform.Find("food").GetComponent<Text>().text = "FOOD : " + food;
+        foodText.text = fooddefault + food;
     }
 }

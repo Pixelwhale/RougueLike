@@ -10,7 +10,7 @@ public class WeaponBackpack : MonoBehaviour
 
     void Awake()
     {
-        Initialize();
+        //Initialize();
     }
 
     private void UpdateSprite()
@@ -30,8 +30,8 @@ public class WeaponBackpack : MonoBehaviour
         weapons = new List<Weapon>(4);
 
         //test
-        Sprite sprite = Resources.Load<Sprite>("pikachu");
-        AddWeapon(new Weapon(0, sprite, 3, 1));
+        //Sprite sprite = Resources.Load<Sprite>("pikachu");
+        //AddWeapon(new Weapon(0, sprite, 3, 1));
 
         UpdateSprite();
     }

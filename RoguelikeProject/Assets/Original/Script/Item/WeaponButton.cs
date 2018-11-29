@@ -7,6 +7,8 @@ public class WeaponButton : MonoBehaviour
 {
     public int index;
 
+    private ItemInfo info;
+
     private bool WeaponExist()
     {
         return (GetComponentInParent<WeaponBackpack>().IsExist(index));

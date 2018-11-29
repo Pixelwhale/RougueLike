@@ -12,6 +12,7 @@ namespace Completed
         public float levelStartDelay = 2f;                      //Time to wait before starting level, in seconds.
         public float turnDelay = 0.1f;                          //Delay between each Player turn.
         public int playerFoodPoints = 100;                      //Starting value for Player food points.
+        public int playerHP = 100;
         public static GameManager instance = null;              //Static instance of GameManager which allows it to be accessed by any other script.
         [HideInInspector]
         public bool playersTurn = true;     //Boolean to check if it's players turn, hidden in inspector but public.
@@ -24,6 +25,38 @@ namespace Completed
         private List<RemakeEnemy> enemies;                          //List of all Enemy units, used to issue them move commands.
         private bool enemiesMoving;                             //Boolean to check if enemies are moving.
         private bool doingSetup = true;                         //Boolean to check if we're setting up board, prevent Player from moving during setup.
+
+        //装備アイテムのリスト
+        private ItemEqipment[] eqipmentItemList = new ItemEqipment[]
+        {
+            new ItemEqipment(ItemType.NONE,false),
+            new ItemEqipment(ItemType.NONE,false),
+            new ItemEqipment(ItemType.NONE,false),
+            new ItemEqipment(ItemType.NONE,false)
+        };
+
+        //消費アイテムのリスト
+        private ItemUse[] useItemList = new ItemUse[]
+        {
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0),
+            new ItemUse(ItemType.NONE,0)
+        };
+
+        public ItemEqipment[] EqipmentItemList
+        {
+            get { return eqipmentItemList; }
+        }
+
+        public ItemUse[] UseItemList
+        {
+            get { return useItemList; }
+        }
 
         //Awake is always called before any Start functions
         void Awake()
@@ -51,6 +84,8 @@ namespace Completed
 
             //Call the InitGame function to initialize the first level 
             InitGame();
+
+            //ItemListInit();
         }
 
         //this is called only once, and the paramter tell it to be called only after the scene was loaded
@@ -174,6 +209,139 @@ namespace Completed
 
             //Enemies are done moving, set enemiesMoving to false.
             enemiesMoving = false;
+        }
+
+        private void AddOnly(ref ItemUse itemNum, ItemType type)
+        {
+            itemNum.type = type;
+            itemNum.num++;
+        }
+
+        private void UseOnly(ref ItemUse itemNum)
+        {
+            int n = itemNum.num;
+            --n;
+            itemNum.num = Mathf.Max(0, n);
+
+            if (itemNum.num <= 0)
+            {
+                itemNum.type = ItemType.NONE;
+            }
+        }
+
+        //配列に空の要素があるかどうか
+        private bool IsEmptyItem(ItemUse[] array)
+        {
+            foreach (var info in array)
+            {
+                if (info.type == ItemType.NONE) return true;
+            }
+
+            //全てNONEでなかったのでアイテムリストが空でないからfalse
+            return false;
+        }
+        private bool IsEmptyItem(ItemEqipment[] array)
+        {
+            foreach(var info in array)
+            {
+                if (info.type == ItemType.NONE) return true;
+            }
+
+            return false;
+        }
+
+        private int IsIndexOf(ItemUse[] array, System.Func<ItemUse, bool> condition)
+        {
+            for(int i = 0; i < array.Length; i++)
+            {
+                if (condition(array[i])) return i;
+            }
+
+            return 0;
+        }
+        private int IsIndexOf(ItemEqipment[] array, System.Func<ItemEqipment, bool> condition)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (condition(array[i])) return i;
+            }
+
+            return 0;
+        }
+
+        //arrayにtypeのアイテムが登録されているかどうか
+        private bool IsContainsItem(ItemUse[] array, ItemType type)
+        {
+            foreach(var info in array)
+            {
+                if (info.type == type) return true;
+            }
+
+            return false;
+        }
+        //arrayにtypeのアイテムが登録されているかどうか
+        private bool IsContainsItem(ItemEqipment[] array, ItemType type)
+        {
+            foreach (var info in array)
+            {
+                if (info.type == type) return true;
+            }
+
+            return false;
+        }
+
+        //消費アイテムを取得したときに呼ぶ
+        public bool AddUseItem(ItemType type)
+        {
+            bool isContains = IsContainsItem(useItemList, type);
+            //アイテムに空の要素がなく、かつ指定のアイテムがすでに登録されていなかったらAdd失敗
+            if (!IsEmptyItem(useItemList) && !isContains) return false;
+
+            //同じアイテムを含んでいた場合
+            if (isContains)
+            {
+                //同じ要素に対して追加する
+                AddOnly(ref useItemList[IsIndexOf(useItemList, info => info.type == type)], type);
+            }
+            else
+            {
+                //空の要素に対して追加する
+                AddOnly(ref useItemList[IsIndexOf(useItemList, info => info.type == ItemType.NONE)], type);
+            }
+
+            //Add成功
+            return true;
+        }
+
+        //装備アイテムを取得したときに呼ぶ
+        public bool AddEqipmentItem(ItemType type)
+        {
+            //空の要素がなかったらAdd失敗
+            if (!IsEmptyItem(eqipmentItemList)) return false;
+
+            //空のアイテムのアイテムタイプを更新
+            eqipmentItemList[IsIndexOf(eqipmentItemList, info => info.type == ItemType.NONE)].type = type;
+
+            //Add成功
+            return true;
+        }
+
+        //消費アイテムの使用
+        public void UseItem(ItemType type)
+        {
+            //引数のアイテムを含んでいなかったらreturn
+            if (!IsContainsItem(useItemList, type)) return;
+
+            //アイテムの消費
+            UseOnly(ref useItemList[IsIndexOf(useItemList, info => info.type == type)]);
+        }
+        
+        //装備品の装備
+        public void EqipmentItem(ItemType type)
+        {
+            if (!IsContainsItem(eqipmentItemList, type)) return;
+
+            eqipmentItemList[IsIndexOf(eqipmentItemList, info => info.type == type)].isEqipment = true;
         }
     }
 }
