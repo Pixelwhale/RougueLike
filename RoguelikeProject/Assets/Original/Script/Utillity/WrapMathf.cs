@@ -58,5 +58,15 @@ namespace utility
             f1 = f2;
             f2 = temp;
         }
+
+        public static Vector2 ScreenPosition(Vector3 worldPosition, RectTransform canvasRectTransform)
+        {
+            Vector2 screenPosition = Camera.main.WorldToViewportPoint(worldPosition);
+
+            float resultX = screenPosition.x * canvasRectTransform.sizeDelta.x;
+            float resultY = screenPosition.y * canvasRectTransform.sizeDelta.y;
+
+            return new Vector2(resultX, resultY);
+        }
     }
 }

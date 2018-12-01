@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class LifeText : MonoBehaviour
 {
-    [SerializeField]
     private RectTransform canvasRectTransform;
 
     private LifeTextData data;
@@ -28,6 +27,8 @@ public class LifeText : MonoBehaviour
 	void Start ()
     {
         myText = GetComponent<Text>();
+        canvasRectTransform = lifeOwner.transform.Find("Canvas").GetComponent<RectTransform>();
+
         currentTime = 0f;
         initPosition = transform.position;
 
@@ -35,6 +36,7 @@ public class LifeText : MonoBehaviour
 
         data = GameObject.Find("GameDataManager").GetComponent<LifeTextData>();
         recttransform = GetComponent<RectTransform>();
+        myText.fontSize = data.fontSize;
 	}
 	
 	void Update ()
@@ -46,6 +48,12 @@ public class LifeText : MonoBehaviour
     {
         if (healvalue < 0) return;
         WriteText(healvalue, data.healColor);
+    }
+
+    public void CallEatText(int eatvalue)
+    {
+        if (eatvalue < 0) return;
+        WriteText(eatvalue, data.eatColor);
     }
 
     public void CallDamageText(int damageValue)
@@ -85,6 +93,7 @@ public class LifeText : MonoBehaviour
     {
         float timeRate = currentTime / data.moveTime;
         recttransform.position = Vector2.Lerp(initPosition, initPosition + data.moveVelocity, timeRate);
+        //recttransform.position = initPosition;
     }
 
     private void TextUpdate()
@@ -109,18 +118,10 @@ public class LifeText : MonoBehaviour
 
     private void SetAppearPosition()
     {
-        Vector2 appearPosition = ScreenPosition(lifeOwner.transform.position + (Vector3)data.appearShift);
+        Vector2 appearPosition = utility.WrapMathf.ScreenPosition(lifeOwner.transform.position + (Vector3)data.appearShift, canvasRectTransform);
+        //Vector2 appearPosition = utility.WrapMathf.ScreenPosition(lifeOwner.transform.position, canvasRectTransform);
 
         initPosition = appearPosition;
-    }
-
-    private Vector2 ScreenPosition(Vector3 worldPosition)
-    {
-        Vector2 screenPosition = Camera.main.WorldToViewportPoint(worldPosition);
-
-        float resultX = screenPosition.x * canvasRectTransform.sizeDelta.x;
-        float resultY = screenPosition.y * canvasRectTransform.sizeDelta.y;
-
-        return new Vector2(resultX, resultY);
+        recttransform.position = initPosition;
     }
 }

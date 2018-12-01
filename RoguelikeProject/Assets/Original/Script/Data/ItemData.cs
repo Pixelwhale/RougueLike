@@ -36,7 +36,7 @@ public struct ItemInfo
 {
     public ItemType type;
     public Sprite sprite;
-    public float value;
+    public int value;
 }
 
 //アイテムのタイプと個数を持つ構造体

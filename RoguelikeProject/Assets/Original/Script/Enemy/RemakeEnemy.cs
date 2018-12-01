@@ -11,6 +11,9 @@ public class RemakeEnemy : MovingObject
     //攻撃した時の音2
     public AudioClip attackSound2;
 
+    [SerializeField]
+    private GameObject lifetextPrefab;
+
     //自身のAnimator
     private Animator animator;
 
@@ -22,7 +25,7 @@ public class RemakeEnemy : MovingObject
 
     private BattleSystem battleSystem;
 
-    private LifeText playerLifeText;
+    private LifeText playerlife;
 
     //overrideしたStart
     protected override void Start()
@@ -35,9 +38,15 @@ public class RemakeEnemy : MovingObject
 
         //targetをPlayerのtransformに設定
         target = GameObject.FindGameObjectWithTag("Player").transform;
-        playerLifeText = target.GetComponentInChildren<LifeText>();
 
         skipMove = false;
+
+        //GameObject lifeTextObj = Instantiate(lifetextPrefab);
+        //lifeTextObj.transform.parent = GameObject.Find("LifeTextManager").transform;
+        //myLifeText = lifeTextObj.GetComponent<LifeText>();
+        //myLifeText.LifeOwner = gameObject;
+
+        playerlife = target.GetComponentInChildren<LifeText>();
 
         base.Start();
     }
@@ -129,6 +138,6 @@ public class RemakeEnemy : MovingObject
         SoundManager.instance.RandomizeSfx(attackSound1, attackSound2);
 
         //プレイヤーのライフテキストに書き込みを行う
-        playerLifeText.CallDamageText(damage);
+        playerlife.CallDamageText(damage);
     }
 }

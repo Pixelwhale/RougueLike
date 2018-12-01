@@ -9,6 +9,13 @@ namespace Completed
 
     public class GameManager : MonoBehaviour
     {
+        struct GameData
+        {
+            public int playerFood;
+            public int playerHP;
+            public int level;
+        }
+
         public float levelStartDelay = 2f;                      //Time to wait before starting level, in seconds.
         public float turnDelay = 0.1f;                          //Delay between each Player turn.
         public int playerFoodPoints = 100;                      //Starting value for Player food points.
@@ -25,28 +32,16 @@ namespace Completed
         private List<RemakeEnemy> enemies;                          //List of all Enemy units, used to issue them move commands.
         private bool enemiesMoving;                             //Boolean to check if enemies are moving.
         private bool doingSetup = true;                         //Boolean to check if we're setting up board, prevent Player from moving during setup.
+        private GameData initData;
 
         //装備アイテムのリスト
-        private ItemEqipment[] eqipmentItemList = new ItemEqipment[]
-        {
-            new ItemEqipment(ItemType.NONE,false),
-            new ItemEqipment(ItemType.NONE,false),
-            new ItemEqipment(ItemType.NONE,false),
-            new ItemEqipment(ItemType.NONE,false)
-        };
+        private ItemEqipment[] eqipmentItemList;
 
         //消費アイテムのリスト
-        private ItemUse[] useItemList = new ItemUse[]
-        {
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0),
-            new ItemUse(ItemType.NONE,0)
-        };
+        private ItemUse[] useItemList;
+
+        private CountDownText countdown;
+        private bool isRetry = false;
 
         public ItemEqipment[] EqipmentItemList
         {
@@ -63,15 +58,21 @@ namespace Completed
         {
             //Check if instance already exists
             if (instance == null)
-
+            {
+                Screen.fullScreen = true;
                 //if not, set instance to this
                 instance = this;
-
+                initData.playerFood = playerFoodPoints;
+                initData.playerHP = playerHP;
+                initData.level = level;
+                GameStart();
+            }
             //If instance already exists and it's not this:
             else if (instance != this)
-
+            {
                 //Then destroy this. This enforces our singleton pattern, meaning there can only ever be one instance of a GameManager.
                 Destroy(gameObject);
+            }
 
             //Sets this to not be destroyed when reloading scene
             DontDestroyOnLoad(gameObject);
@@ -82,10 +83,10 @@ namespace Completed
             //Get a component reference to the attached BoardManager script
             boardScript = GetComponent<RemakeBoardManager>();
 
+            isRetry = false;
+
             //Call the InitGame function to initialize the first level 
             InitGame();
-
-            //ItemListInit();
         }
 
         //this is called only once, and the paramter tell it to be called only after the scene was loaded
@@ -100,7 +101,15 @@ namespace Completed
         //This is called each time a scene is loaded.
         static private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
-            instance.level++;
+            if (instance.isRetry)
+            {
+                instance.isRetry = false;
+            }
+            else
+            {
+                instance.level++;
+            }
+
             instance.InitGame();
         }
 
@@ -132,6 +141,8 @@ namespace Completed
             //Call the SetupScene function of the BoardManager script, pass it current level number.
             boardScript.SetupScene(level);
 
+            countdown = GameObject.FindGameObjectWithTag("MainCanvas").transform.Find("RetryCountDown").GetComponent<CountDownText>();
+            countdown.gameObject.SetActive(false);
         }
 
 
@@ -165,6 +176,26 @@ namespace Completed
             enemies.Add(script);
         }
 
+        public void GameStart()
+        {
+            playerFoodPoints = initData.playerFood;
+            playerHP = initData.playerHP;
+            level = initData.level;
+
+            eqipmentItemList = new ItemEqipment[4];
+            for(int i = 0; i < 4; i++)
+            {
+                eqipmentItemList[i].type = ItemType.NONE;
+                eqipmentItemList[i].isEqipment = false;
+            }
+
+            useItemList = new ItemUse[8];
+            for(int i = 0; i < 8; i++)
+            {
+                useItemList[i].type = ItemType.NONE;
+                useItemList[i].num = 0;
+            }
+        }
 
         //GameOver is called when the player reaches 0 food points
         public void GameOver()
@@ -175,8 +206,18 @@ namespace Completed
             //Enable black background image gameObject.
             levelImage.SetActive(true);
 
-            //Disable this GameManager.
-            enabled = false;
+            if (countdown != null)
+            {
+                countdown.gameObject.SetActive(true);
+                countdown.TimeUpAction = GameStart;
+                countdown.TimeUpAction += () => isRetry = true;
+            }
+        }
+
+        public static void Restart()
+        {
+            //シーンをロードする(全てのロードされているシーンを閉じ、指定のシーンだけロード)
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
         }
 
         //Coroutine to move enemies in sequence.
@@ -195,6 +236,8 @@ namespace Completed
                 yield return new WaitForSeconds(turnDelay);
             }
 
+            CheckDeadEnemy();
+
             //Loop through List of Enemy objects.
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -209,6 +252,11 @@ namespace Completed
 
             //Enemies are done moving, set enemiesMoving to false.
             enemiesMoving = false;
+        }
+
+        private void CheckDeadEnemy()
+        {
+            enemies.RemoveAll(e => e == null);
         }
 
         private void AddOnly(ref ItemUse itemNum, ItemType type)
@@ -279,19 +327,9 @@ namespace Completed
 
             return false;
         }
-        //arrayにtypeのアイテムが登録されているかどうか
-        private bool IsContainsItem(ItemEqipment[] array, ItemType type)
-        {
-            foreach (var info in array)
-            {
-                if (info.type == type) return true;
-            }
-
-            return false;
-        }
 
         //消費アイテムを取得したときに呼ぶ
-        public bool AddUseItem(ItemType type)
+        private bool AddUseItem(ItemType type)
         {
             bool isContains = IsContainsItem(useItemList, type);
             //アイテムに空の要素がなく、かつ指定のアイテムがすでに登録されていなかったらAdd失敗
@@ -313,8 +351,25 @@ namespace Completed
             return true;
         }
 
+        public bool AddItem(ItemType type)
+        {
+            if (utility.Range.IsRangeOfInt((int)type, 0, 13))
+            {
+                //EQIPMENT
+                return AddEqipmentItem(type);
+            }
+
+            if (utility.Range.IsRangeOfInt((int)type, 14, 16))
+            {
+                //USEITEM
+                return AddUseItem(type);
+            }
+
+            return false;
+        }
+
         //装備アイテムを取得したときに呼ぶ
-        public bool AddEqipmentItem(ItemType type)
+        private bool AddEqipmentItem(ItemType type)
         {
             //空の要素がなかったらAdd失敗
             if (!IsEmptyItem(eqipmentItemList)) return false;
@@ -334,14 +389,6 @@ namespace Completed
 
             //アイテムの消費
             UseOnly(ref useItemList[IsIndexOf(useItemList, info => info.type == type)]);
-        }
-        
-        //装備品の装備
-        public void EqipmentItem(ItemType type)
-        {
-            if (!IsContainsItem(eqipmentItemList, type)) return;
-
-            eqipmentItemList[IsIndexOf(eqipmentItemList, info => info.type == type)].isEqipment = true;
         }
     }
 }

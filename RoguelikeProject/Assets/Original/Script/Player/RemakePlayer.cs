@@ -9,16 +9,13 @@ using Completed;
 public class RemakePlayer : MovingObject
 {
     public float restartLevelDelay = 1f;        //階層が変わる階段に当たった時に、Restartを呼ぶまでの時間(秒)
-    public int pointsPerFood = 10;              //フードに当たった時の回復量
-    public int pointsPerSoda = 20;              //ソーダに当たった時の回復量
     public int wallDamage = 1;                  //壁にもHPがあるので、壁に攻撃したとき(壁に向かって移動しようとすることで攻撃したことになる)壁に与えるダメージ量
     public AudioClip moveSound1;                //プレイヤーが動いた時の音1
     public AudioClip moveSound2;                //プレイヤーが動いた時の音2
-    public AudioClip eatSound1;                 //プレイヤーがフードを食べた時の音1
-    public AudioClip eatSound2;                 //プレイヤーがフードを食べた時の音2
-    public AudioClip drinkSound1;               //プレイヤーがソーダを飲んだ時の音1
-    public AudioClip drinkSound2;               //プレイヤーがソーダを飲んだ時の音2
     public AudioClip gameOverSound;             //ゲームオーバーになったと時の音
+
+    [SerializeField,Header("空腹時の1歩のダメージ量")]
+    private int emptyfoodDamgage = 5;
 
     private Animator animator;                  //プレイヤーのアニメーター
     private int food;                           //現在の満腹度
@@ -27,6 +24,13 @@ public class RemakePlayer : MovingObject
     private BattleSystem battleSystem;
 
     private Status status;
+    private LifeText lifetext;
+    private bool isGameend;
+
+    public LifeText LifeText
+    {
+        get { return lifetext; }
+    }
 
     public int Food
     {
@@ -39,10 +43,13 @@ public class RemakePlayer : MovingObject
         animator = GetComponent<Animator>();
         battleSystem = GetComponent<BattleSystem>();
         status = GetComponent<Status>();
+        lifetext = GetComponentInChildren<LifeText>();
 
         //満腹度を初期化
         food = GameManager.instance.playerFoodPoints;
         status.CurrentHp = GameManager.instance.playerHP;
+
+        isGameend = false;
 
         //継承元のStartを呼ぶ
         base.Start();
@@ -51,6 +58,8 @@ public class RemakePlayer : MovingObject
     //GameObjectが非アクティブ、または削除されるときの呼ばれる
     private void OnDisable()
     {
+        if (isGameend) return;
+
         //プレイヤーの満腹度、HPを保存
         GameManager.instance.playerFoodPoints = food;
         GameManager.instance.playerHP = status.CurrentHp;
@@ -78,13 +87,16 @@ public class RemakePlayer : MovingObject
             //移動量に応じた移動処理をする
             AttemptMove<Wall>(horizontal, vertical);
         }
+
+        //GameOverしてないかチェック
+        CheckIfGameOver();
     }
 
     //移動量に応じた移動処理と移動時に必要な処理を呼ぶ
     protected override void AttemptMove<T>(int xDir, int yDir)
     {
         //満腹度を減らす
-        food--;
+        ReduceFood();
 
         //継承元のローグライク的な移動処理を行う
         base.AttemptMove<T>(xDir, yDir);
@@ -132,36 +144,10 @@ public class RemakePlayer : MovingObject
         if (other.tag == "Exit")
         {
             //自身のRestartメソッドをrestartLevelDelay秒後に呼ぶ
-            Invoke("Restart", restartLevelDelay);
+            StartCoroutine(utility.Coroutine.DelayMethod(restartLevelDelay, GameManager.Restart));
 
             //自身のスクリプトを一旦止める
             enabled = false;
-        }
-
-        //相手がフードだったら
-        else if (other.tag == "Food")
-        {
-            //満腹度を回復させる
-            food += pointsPerFood;
-
-            //フードを食べた音を再生
-            SoundManager.instance.RandomizeSfx(eatSound1, eatSound2);
-
-            //フードを非アクティブにする
-            other.gameObject.SetActive(false);
-        }
-
-        //相手がソーダだったら
-        else if (other.tag == "Soda")
-        {
-            //満腹度を回復させる
-            food += pointsPerSoda;
-
-            //ソーダを飲んだ時の音を再生
-            SoundManager.instance.RandomizeSfx(drinkSound1, drinkSound2);
-
-            //ソーダを非アクティブにする
-            other.gameObject.SetActive(false);
         }
     }
 
@@ -172,33 +158,38 @@ public class RemakePlayer : MovingObject
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
     }
 
-    //移動以外で満腹度を減らされる処理
-    public void LoseFood(int loss)
+    private void ReduceFood()
     {
-        //ヒットした際のアニメーションを再生
-        animator.SetTrigger("playerHit");
+        food--;
 
-        //満腹度を減らす
-        food -= loss;
+        if (food < 0)
+        {
+            status.CurrentHp -= emptyfoodDamgage;
+        }
 
-        //GameOverをチェックする
-        CheckIfGameOver();
+        food = Mathf.Max(0, food);
     }
 
     //GameOverをチェックする
     private void CheckIfGameOver()
     {
-        //満腹度が0以下だったらGameOverの処理をする
-        if (food <= 0)
+        if (isGameend) return;
+
+        //HPが0以下だったらGameOverの処理をする
+        if (status.IsDead)
         {
             //GameOverの音を再生する
-            //SoundManager.instance.PlaySingle(gameOverSound);
+            SoundManager.instance.PlaySingle(gameOverSound);
 
             //BGMを止める
-            //SoundManager.instance.musicSource.Stop();
+            SoundManager.instance.musicSource.Stop();
 
             //GameManagerのGameOverを呼ぶ
-            //GameManager.instance.GameOver();
+            GameManager.instance.GameOver();
+
+            isGameend = true;
+
+            enabled = false;
         }
     }
 
@@ -232,7 +223,24 @@ public class RemakePlayer : MovingObject
         animator.SetTrigger("playerChop");
 
         //enemyのlifeTextを取得
-        LifeText lifeText = enemy.GetComponentInChildren<LifeText>();
+        LifeText lifeText = enemy.GetComponentInChildren<LifeText>();//.LifeText;
         lifeText.CallDamageText(damage);
+
+        if (receiver.IsDead)
+        {
+            Destroy(enemy);
+        }
+    }
+
+    public void RecoveryHP(int hp)
+    {
+        status.CurrentHp += hp;
+        lifetext.CallHealText(hp);
+    }
+
+    public void EatFood(int food)
+    {
+        this.food += food;
+        lifetext.CallEatText(food);
     }
 }

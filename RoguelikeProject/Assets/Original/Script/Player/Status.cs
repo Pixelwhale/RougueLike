@@ -53,6 +53,11 @@ public class Status : MonoBehaviour
         set { armor = value; }
     }
 
+    public bool IsDead
+    {
+        get { return CurrentHp <= 0; }
+    }
+
     void Awake()
     {
         currentHP = maxHP;

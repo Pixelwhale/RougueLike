@@ -7,6 +7,9 @@ public class LifeTextData : MonoBehaviour
     [Header("回復した時のテキストの色")]
     public Color healColor = Color.green;
 
+    [Header("食料を食べた時のテキストの色")]
+    public Color eatColor = Color.yellow;
+
     [Header("ダメージを受けた時のテキストの色")]
     public Color damageColor = Color.red;
 
@@ -18,4 +21,7 @@ public class LifeTextData : MonoBehaviour
 
     [Header("テキストの移動にかかる時間")]
     public float moveTime = 2f;
+
+    [Header("フォントサイズ")]
+    public int fontSize = 15;
 }

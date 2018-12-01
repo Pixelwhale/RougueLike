@@ -6,10 +6,10 @@ using UnityEngine.UI;
 public class StatusUI : MonoBehaviour
 {
     [SerializeField]
-    private Text hpText, atkText, foodText;
+    private Text hpText, atkText, defText, foodText;
 
     //テキストのデフォルトの文字列
-    private string hpdefault, atkdefault, fooddefault;
+    private string hpdefault, atkdefault, defdefault, fooddefault;
 
     private Status playerStatus;
     private RemakePlayer player;
@@ -22,6 +22,7 @@ public class StatusUI : MonoBehaviour
 
         hpdefault = hpText.text;
         atkdefault = atkText.text;
+        defdefault = defText.text;
         fooddefault = foodText.text;
     }
 
@@ -29,20 +30,26 @@ public class StatusUI : MonoBehaviour
     {
         SetHP(playerStatus.CurrentHp);
         SetAtk(playerStatus.Attack);
+        SetDef(playerStatus.Defense);
         SetFood(player.Food);
     }
 
-    public void SetHP(int hp)
+    private void SetHP(int hp)
     {
         hpText.text = hpdefault + hp;
     }
 
-    public void SetAtk(int atk)
+    private void SetAtk(int atk)
     {
         atkText.text = atkdefault + atk;
     }
 
-    public void SetFood(int food)
+    private void SetDef(int dfc)
+    {
+        defText.text = defdefault + dfc;
+    }
+
+    private void SetFood(int food)
     {
         foodText.text = fooddefault + food;
     }
